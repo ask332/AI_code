@@ -1,0 +1,369 @@
+Travelling Salsman
+from sys import maxsize
+from itertools import permutations
+
+def tsp(graph,s):
+
+    V = len(graph)
+
+    vertex = []
+
+    for i in range(V):
+        if i != s:
+            vertex.append(i)
+   
+    min_path = maxsize
+
+    next_permutation = permutations(vertex)
+
+    path = []
+
+    for i in next_permutation:
+
+        current_pathweight = 0
+
+        curr_path = [s]
+
+        k = s
+
+        for  j in i:
+            curr_path.append(j)
+            current_pathweight += graph[k][j]
+            k = j
+        
+        current_pathweight += graph[k][s]
+        curr_path.append(s)
+
+        if current_pathweight < min_path:
+            min_path = current_pathweight
+            path = curr_path
+    
+    print("Path is: ",end = " ")
+    for i in range(len(path)):
+        print(path[i],end = " ")
+    
+    print()
+    print("Cost of path is: ",min_path)
+
+
+adj_matrix = [
+    [0,7,0,4,27],
+    [7,0,1,6,3],
+    [0,1,0,5,4],
+    [4,6,5,0,5],
+    [27,3,4,5,0]
+]
+
+tsp(adj_matrix,2)
+
+
+
+[8:26 am, 12/05/2022] Prathamesh Paraswar: Water Jug
+from collections import defaultdict
+
+jug1, jug2, aim = 4, 3, 2
+
+visited = defaultdict(lambda: False)
+
+def waterJugSolver(amt1, amt2): 
+
+    if (amt1 == aim and amt2 == 0) or (amt2 == aim and amt1 == 0):
+        print(amt1, amt2)
+        return True
+
+    if visited[(amt1, amt2)] == False:
+        print(amt1, amt2)
+      
+        # Changes the boolean value of
+        # the combination as it is visited. 
+        visited[(amt1, amt2)] = True
+      
+        # Check for all the 6 possibilities and 
+        # see if a solution is found in any one of them.
+        return (waterJugSolver(0, amt2) or
+                waterJugSolver(amt1, 0) or
+                waterJugSolver(jug1, amt2) or
+                waterJugSolver(amt1, jug2) or
+                waterJugSolver(amt1 + min(amt2, (jug1-amt1)),
+                amt2 - min(amt2, (jug1-amt1))) or
+                waterJugSolver(amt1 - min(amt1, (jug2-amt2)),
+                amt2 + min(amt1, (jug2-amt2))))
+      
+    else:
+        return False
+  
+print("Steps: ")
+
+waterJugSolver(0, 0)
+[8:26 am, 12/05/2022] Prathamesh Paraswar: Tower of Hanoi
+
+def TowerOfHanoi(n, source, destination, auxiliary):
+    count=1
+    if n == 1:
+        print("Move disk 1 from source", source, "to destination",destination)
+        return count
+    count+=TowerOfHanoi(n - 1, source, auxiliary, destination,)
+    print("Move disk", n, "from source", source, "to destination",
+    destination)
+    count+=TowerOfHanoi(n - 1, auxiliary, destination, source)
+    return count;
+n = int(input())
+answer=TowerOfHanoi(n, 'A', 'B', 'C')
+print("The Moves Required are:",answer)
+
+
+
+NLP
+
+resume cleaning
+*************************************
+
+import numpy as np
+import pandas as pd
+import re
+import nltk
+from nltk.corpus import stopwords
+import string
+from wordcloud import WordCloud
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+*************************************
+
+nltk.download('wordnet')
+
+*************************************
+
+df = pd.read_csv(r'Resume_Data.csv', encoding = 'utf-8')
+df['Cleaned_Resume'] = ''
+
+************************************
+
+df.head()
+
+************************************
+
+print("Resume Categories")
+print(df['Category'].value_counts())
+
+*************************************
+
+plt.figure(figsize = (10, 10))                                          # Setting size of plot
+plt.xticks(rotation = 90)                                               # Rotating plot to organize horizontally
+sns.countplot(y = 'Category', data = df)  
+
+*************************************
+
+def Clean_Resume(resumeText):
+    Removals = [                                                        # Deciding weeds in resume
+        'http\S+\s*',                                                   # Web URLs
+        'RT|cc',                                                        # Regular characters
+        '#\S+',                                                         # Hashtags
+        '@\S+',                                                         # Emails
+        '\s+'
+    ]
+    
+    for weed in Removals: resumeText = re.sub(weed, ' ', resumeText)    # Removing weeds using regular expression
+    resumeText = re.sub('[%s]'%re.escape("""!"#$%&'_=-+()[];:,./?^*@{}|\~"""), ' ', resumeText)
+    resumeText = re.sub(r'[^x00-x7f]', r' ', resumeText)
+    
+    return resumeText
+
+*************************************
+
+df['Cleaned_Resume'] = df.Resume.apply(lambda x: Clean_Resume(x))
+df.head()
+
+*************************************
+
+corpus = ''
+for i in range(len(df)): corpus += df['Cleaned_Resume'][i]
+corpus[450:1000]
+
+*************************************
+
+tokenizer = nltk.tokenize.RegexpTokenizer('\w+')
+tokens = tokenizer.tokenize(corpus)                                     # Tokenizing the text into individual words
+
+words = [word.lower() for word in tokens]                               # Transforming all words to lowercase
+print(len(words))
+
+*************************************
+
+stopwords = nltk.corpus.stopwords.words('english')
+
+*************************************
+
+words_new = [
+    word
+    for word in words
+    if word not in stopwords
+]
+
+*************************************
+len(words_new)
+
+*************************************
+from nltk.stem import WordNetLemmatizer
+wnl = WordNetLemmatizer()
+
+lem_words = [
+    wnl.lemmatize(word)
+    for word in words_new
+]
+
+*************************************
+
+same=0
+diff=0
+for i in range(0,1832):
+    if(lem_words[i]==words_new[i]):
+        same=same+1
+    elif(lem_words[i]!=words_new[i]):
+        diff=diff+1
+print('Number of words Lemmatized=', diff)
+print('Number of words not Lemmatized=', same)
+
+*************************************
+
+freq_dist = nltk.FreqDist(lem_words)
+plt.subplots(figsize=(20,12))
+freq_dist.plot(30)
+
+*************************************
+
+mostcommon = freq_dist.most_common(50)
+mostcommon
+
+*************************************
+
+res=' '.join([i for i in lem_words if not i.isdigit()])
+
+*************************************
+
+import os
+os.system('pip install wordcloud')
+
+*************************************
+plt.subplots(figsize=(16,10))
+wordcloud = WordCloud(
+                          background_color='black',
+                          max_words=200,
+                          width=1400,
+                          height=1200
+                         ).generate(res)
+plt.imshow(wordcloud)
+plt.title('Resume Text WordCloud (100 Words)')
+plt.axis('off')
+plt.show()
+*************************************
+
+df
+*************************************
+
+
+
+
+
+n-queens using hill climbing
+
+*************************************
+import random
+from array import array
+*************************************
+board = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]]
+
+neighbour = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]]
+
+queens = [0,0,0,0,0,0,0,0]
+
+*************************************
+def collision_count(column,row):
+    coll = 0
+
+    for j in range(8):
+        if j == row:
+            continue
+        if board[column][j] == 1 :
+            coll += 1
+
+    while(column < 7 and row < 7):
+        row += 1
+        column +=1
+        if board[column][row] == 1:
+            coll += 1
+
+    while(column > 0 and row > 0):
+        row -= 1
+        column -=1
+        if board[column][row] == 1:
+            coll += 1
+
+    while(column > 0 and row < 7):
+        row += 1
+        column -=1
+        if board[column][row] == 1:
+            coll += 1
+
+    while(column < 7 and row > 0):
+        row -= 1
+        column +=1
+        if board[column][row] == 1:
+            coll += 1
+
+    return coll
+
+*************************************
+
+def totalcoll():
+    totcoll = 0
+    for i in range(8):
+        totcoll += collision_count(i,queens[i])
+    return totcoll
+
+*************************************
+
+for i in range(8):
+    queens[i] = random.randrange(0,8)
+    board[i][queens[i]] = 1
+
+totalcollision = totalcoll()
+
+*************************************
+
+for i in range(8):
+    oldqueen = queens[i]
+    for j in range(8):
+        queens[i] = j
+        neighbour[i][j] = totalcoll()
+    queens[i] = oldqueen
+
+*************************************
+
+min = neighbour[0][0]
+minqueencol = 0
+minqueenrow = 0
+for i in range(8):
+    for j in range(8):
+        if(neighbour[i][j]<min):
+            min = neighbour[i][j]
+            minqueenrow = j
+            minqueencol = i
+
+    if min<totalcollision:
+        totalcollision = min
+        queens[minqueencol] = minqueenrow
+    else:
+        break
+
+    if totalcollision == 0:
+                break
+
+print("Final N Queens Configuration : ")
+for i in range(8):
+    for j in range(8):
+        print(str(board[i][j]) + " " , end ="")
+    print()
+
+*************************************
